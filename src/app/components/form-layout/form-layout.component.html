@@ -1,0 +1,23 @@
+<div class="layout" [formGroup]="formGroup()">
+    <div class="card">
+      <div [class]="gridClass()">
+        @for (field of visibleFields(); track field.name) {
+          <app-field-renderer 
+            [field]="field" 
+            [control]="formGroup().get(field.name)!"
+          />
+        }
+      </div>
+      @if (configuration().isSaveButton) {
+        <footer class="actions">
+          <button type="submit" class="btn-primary">Save</button>
+          @if (configuration().discardButtonLabel) {
+            <button type="button" class="btn-secondary">
+              {{ configuration().discardButtonLabel }}
+            </button>
+          }
+        </footer>
+      }
+    </div>
+
+</div>

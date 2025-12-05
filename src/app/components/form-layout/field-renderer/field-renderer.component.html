@@ -1,0 +1,130 @@
+@switch (field().type) {
+  @case ('input') {
+    <label [for]="field().name" [class.required]="isRequired()">
+      {{ field().label }}
+      @if (isRequired()) { <span class="required-mark">*</span> }
+    </label>
+    <input 
+      pInputText 
+      [id]="field().name"
+      [formControl]="$any(control())"
+      [type]="field().inputType || 'text'"
+      [placeholder]="placeholder()"
+      [maxlength]="field().maxLength"
+    />
+    <app-form-error [control]="control()" />
+  }
+  
+  @case ('textarea') {
+    <label [for]="field().name" [class.required]="isRequired()">
+      {{ field().label }}
+      @if (isRequired()) { <span class="required-mark">*</span> }
+    </label>
+    <textarea 
+      pTextarea 
+      [id]="field().name"
+      [formControl]="$any(control())"
+      [rows]="field().rows || 3"
+      [placeholder]="placeholder()"
+    ></textarea>
+    <app-form-error [control]="control()" />
+  }
+  
+  @case ('number') {
+    <label [for]="field().name" [class.required]="isRequired()">
+      {{ field().label }}
+      @if (isRequired()) { <span class="required-mark">*</span> }
+    </label>
+    <p-inputnumber 
+      [inputId]="field().name"
+      [formControl]="$any(control())"
+      [placeholder]="placeholder()"
+    />
+    <app-form-error [control]="control()" />
+  }
+  
+  @case ('checkbox') {
+    <div class="checkbox-wrapper">
+      <p-checkbox 
+        [inputId]="field().name"
+        [formControl]="$any(control())"
+        [binary]="true"
+      />
+      <label [for]="field().name">{{ field().label }}</label>
+    </div>
+  }
+  
+  @case ('dropdown') {
+    <label [for]="field().name" [class.required]="isRequired()">
+      {{ field().label }}
+      @if (isRequired()) { <span class="required-mark">*</span> }
+    </label>
+    <p-select 
+      [inputId]="field().name"
+      [formControl]="$any(control())"
+      [options]="field().options || []"
+      [optionLabel]="field().optionLabel || 'label'"
+      [optionValue]="field().optionValue || 'value'"
+      [placeholder]="placeholder()"
+      [filter]="field().filter"
+    />
+    <app-form-error [control]="control()" />
+  }
+  
+  @case ('calendar') {
+    <label [for]="field().name" [class.required]="isRequired()">
+      {{ field().label }}
+      @if (isRequired()) { <span class="required-mark">*</span> }
+    </label>
+    <p-datepicker 
+      [inputId]="field().name"
+      [formControl]="$any(control())"
+      [showClear]="field().showClear"
+      [timeOnly]="field().timeOnly"
+    />
+    <app-form-error [control]="control()" />
+  }
+  
+  @case ('password') {
+    <label [for]="field().name" [class.required]="isRequired()">
+      {{ field().label }}
+      @if (isRequired()) { <span class="required-mark">*</span> }
+    </label>
+    <p-password 
+      [inputId]="field().name"
+      [formControl]="$any(control())"
+      [toggleMask]="field().toggleMask ?? true"
+      [feedback]="field().feedback ?? false"
+    />
+    <app-form-error [control]="control()" />
+  }
+  
+  @case ('radio') {
+    <fieldset>
+      <legend [class.required]="isRequired()">
+        {{ field().label }}
+        @if (isRequired()) { <span class="required-mark">*</span> }
+      </legend>
+      <div class="radio-group">
+        @for (option of field().options || []; track option.value) {
+          <div class="radio-item">
+            <p-radiobutton 
+              [inputId]="field().name + '_' + option.value"
+              [formControl]="$any(control())"
+              [value]="option.value"
+            />
+            <label [for]="field().name + '_' + option.value">{{ option.label }}</label>
+          </div>
+        }
+      </div>
+      <app-form-error [control]="control()" />
+    </fieldset>
+  }
+  
+  @case ('label') {
+    <div class="label-field">
+      <span class="label-title">{{ field().label }}</span>
+      <span class="label-value">{{ control()?.value }}</span>
+    </div>
+  }
+}
