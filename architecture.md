@@ -1178,4 +1178,6 @@ Perfect! I've created a comprehensive architecture.md document covering:
 - Security headers
 - Performance budgets
 
+. ✅ **Modern Browser Target** - ES2022+, smaller polyfills
+
 The document is ready to use as a reference guide for building production-grade Angular 20+ applications with Nx! 🚀
