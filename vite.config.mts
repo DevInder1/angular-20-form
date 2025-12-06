@@ -9,10 +9,22 @@ export default defineConfig(() => ({
   cacheDir: './node_modules/.vite/angular-21',
   plugins: [angular(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   
+  esbuild: {
+    legalComments: 'none',
+    treeShaking: true,
+    minifyIdentifiers: true,
+    minifySyntax: true,
+    minifyWhitespace: true,
+  },
+  
   build: {
     target: ['es2022', 'edge89', 'firefox89', 'chrome89', 'safari15'],
     cssCodeSplit: true,
+    cssMinify: 'lightningcss',
     minify: 'terser',
+    modulePreload: {
+      polyfill: true,
+    },
     terserOptions: {
       compress: {
         drop_console: true,
