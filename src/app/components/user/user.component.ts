@@ -26,19 +26,27 @@ export class UserComponent {
     fields: getUserFields(),
     isSaveButton: true,
     discardButtonLabel: 'Cancel',
-    columns: 3 as const
+    columns: 3 as const,
+    onSave: (formData: unknown) => this.onSubmit(formData),
+    onDiscard: () => this.onDiscard()
   });
 
-  protected onSubmit(): void {
+  protected onSubmit(formData: unknown): void {
+    console.log('onSubmit called in UserComponent');
+    console.log('Form submitted successfully:', formData);
+    this.saveUser(formData);
+    // TODO: Make API call here
+    // Example:
+    // this.userService.saveUser(formData).subscribe({
+    //   next: (response) => console.log('User saved:', response),
+    //   error: (error) => console.error('Save failed:', error)
+    // });
+  }
+
+  protected onDiscard(): void {
     const form = this.userFormGroup();
-    const validation = this.formService.validateForm(form);
-    
-    if (validation.valid) {
-      console.log('Form submitted successfully:', form.value);
-      this.saveUser(form.value);
-    } else {
-      console.error('Form validation failed:', validation.errors);
-    }
+    form.reset();
+    console.log('Form discarded and reset');
   }
 
   private saveUser(userData: unknown): void {

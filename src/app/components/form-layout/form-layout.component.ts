@@ -24,4 +24,24 @@ export class FormLayoutComponent {
     'form-grid': true,
     [`columns-${this.columns()}`]: true
   }));
+
+  handleSubmit(): void {
+    console.log('handleSubmit called');
+    const form = this.formGroup();
+    console.log('Form valid:', form.valid);
+    console.log('Form value:', form.value);
+    
+    if (form.valid) {
+      console.log('Calling onSave callback');
+      this.configuration().onSave?.(form.value);
+    } else {
+      console.log('Form invalid, marking all as touched');
+      form.markAllAsTouched();
+    }
+  }
+
+  handleDiscard(): void {
+    console.log('handleDiscard called');
+    this.configuration().onDiscard?.();
+  }
 }

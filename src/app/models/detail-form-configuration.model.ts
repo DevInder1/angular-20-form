@@ -15,4 +15,6 @@ export class DetailFormConfiguration {
   removeCard?: boolean;
   discardButtonLabel?: string;
   columns?: 2 | 3; // Number of columns in the grid layout (default: 3)
+  onSave?: (formData: unknown) => void;
+  onDiscard?: () => void;
 }

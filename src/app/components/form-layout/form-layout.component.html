@@ -1,4 +1,4 @@
-<div class="layout" [formGroup]="formGroup()">
+<form class="layout" [formGroup]="formGroup()" (ngSubmit)="handleSubmit()">
     <div class="card">
       <div [class]="gridClass()">
         @for (field of visibleFields(); track field.name) {
@@ -12,7 +12,7 @@
         <footer class="actions">
           <button type="submit" class="btn-primary">Save</button>
           @if (configuration().discardButtonLabel) {
-            <button type="button" class="btn-secondary">
+            <button type="button" class="btn-secondary" (click)="handleDiscard()">
               {{ configuration().discardButtonLabel }}
             </button>
           }
@@ -20,4 +20,4 @@
       }
     </div>
 
-</div>
+</form>
