@@ -1180,4 +1180,20 @@ Perfect! I've created a comprehensive architecture.md document covering:
 
 . ✅ **Modern Browser Target** - ES2022+, smaller polyfills
 
+## FOUC (Flash of Unstyled Content)
+
+**Problem**: Page shows unstyled briefly on load
+
+**Solution**: Inline critical CSS properly
+
+```json
+{
+  "optimization": {
+    "styles": {
+      "inlineCritical": true // Must be enabled
+    }
+  }
+}
+
 The document is ready to use as a reference guide for building production-grade Angular 20+ applications with Nx! 🚀
+```
