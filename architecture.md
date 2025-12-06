@@ -1179,5 +1179,3 @@ Perfect! I've created a comprehensive architecture.md document covering:
 - Performance budgets
 
 The document is ready to use as a reference guide for building production-grade Angular 20+ applications with Nx! 🚀
-
-Made changes.
