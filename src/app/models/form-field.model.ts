@@ -29,6 +29,7 @@ export interface FormField {
   hint?: string;
   hide?: boolean;
   validators?: FormFieldValidator[];
+  errorMessages?: Record<string, string>; // Custom error messages for validators
   maxLength?: number;
   minLength?: number;
   required?: boolean;

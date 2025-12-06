@@ -12,7 +12,7 @@
       [placeholder]="placeholder()"
       [maxlength]="field().maxLength"
     />
-    <app-form-error [control]="control()" />
+    <app-form-error [control]="control()" [errorMessages]="field().errorMessages || {}" />
   }
   
   @case ('textarea') {
@@ -27,7 +27,7 @@
       [rows]="field().rows || 3"
       [placeholder]="placeholder()"
     ></textarea>
-    <app-form-error [control]="control()" />
+    <app-form-error [control]="control()" [errorMessages]="field().errorMessages || {}" />
   }
   
   @case ('number') {
@@ -40,7 +40,7 @@
       [formControl]="$any(control())"
       [placeholder]="placeholder()"
     />
-    <app-form-error [control]="control()" />
+    <app-form-error [control]="control()" [errorMessages]="field().errorMessages || {}" />
   }
   
   @case ('checkbox') {
@@ -68,7 +68,7 @@
       [placeholder]="placeholder()"
       [filter]="field().filter"
     />
-    <app-form-error [control]="control()" />
+    <app-form-error [control]="control()" [errorMessages]="field().errorMessages || {}" />
   }
   
   @case ('calendar') {
@@ -82,7 +82,7 @@
       [showClear]="field().showClear"
       [timeOnly]="field().timeOnly"
     />
-    <app-form-error [control]="control()" />
+    <app-form-error [control]="control()" [errorMessages]="field().errorMessages || {}" />
   }
   
   @case ('password') {
@@ -96,7 +96,7 @@
       [toggleMask]="field().toggleMask ?? true"
       [feedback]="field().feedback ?? false"
     />
-    <app-form-error [control]="control()" />
+    <app-form-error [control]="control()" [errorMessages]="field().errorMessages || {}" />
   }
   
   @case ('radio') {
@@ -117,7 +117,7 @@
           </div>
         }
       </div>
-      <app-form-error [control]="control()" />
+      <app-form-error [control]="control()" [errorMessages]="field().errorMessages || {}" />
     </fieldset>
   }
   

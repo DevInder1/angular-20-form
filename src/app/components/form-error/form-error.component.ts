@@ -1,6 +1,7 @@
-import { Component, input, computed, effect, signal, inject } from '@angular/core';
+import { Component, input, computed, signal, effect, inject } from '@angular/core';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { VALIDATOR_ERROR_MESSAGES } from '../../utils/validators';
 
 /**
  * Reusable component to display form validation errors
@@ -19,6 +20,7 @@ export class FormErrorComponent {
   
   errors = input<ValidationErrors | null>(null);
   control = input<AbstractControl | null>(null);
+  errorMessages = input<Record<string, string>>({}); // Custom error messages from field config
   
   // Create a signal that updates whenever control state changes
   private controlStateVersion = signal(0);
@@ -30,35 +32,61 @@ export class FormErrorComponent {
     // Access the signal to make this computed reactive to control state changes
     this.controlStateVersion();
     
-    console.log('shouldShowError - touched:', ctrl.touched, 'dirty:', ctrl.dirty, 'invalid:', ctrl.invalid);
     return ctrl.invalid && (ctrl.touched || ctrl.dirty);
   });
   
   errorMessage = computed(() => {
     const ctrl = this.control();
-    const errors = this.errors() || ctrl?.errors;
     
-    console.log('errorMessage - Current Errors:', errors);
+    // Access the signal to make this computed reactive to control state changes
+    this.controlStateVersion();
+    
+    const errors = this.errors() || ctrl?.errors;
+    const customMessages = this.errorMessages();
     
     if (!errors) return null;
 
-    // Standard validators
-    if (errors['required']) return 'This field is required';
-    if (errors['email']) return 'Please enter a valid email address';
-    if (errors['minlength']) {
-      return `Minimum length is ${errors['minlength'].requiredLength} characters`;
-    }
-    if (errors['maxlength']) {
-      return `Maximum length is ${errors['maxlength'].requiredLength} characters`;
-    }
-    if (errors['min']) return `Minimum value is ${errors['min'].min}`;
-    if (errors['max']) return `Maximum value is ${errors['max'].max}`;
-    if (errors['pattern']) return 'Please enter a valid format';
+    // If field is NOT empty, skip 'required' error and show specific validation errors
+    const hasValue = ctrl?.value && (typeof ctrl.value === 'string' ? ctrl.value.trim().length > 0 : true);
     
-    // Custom validators
-    if (errors['passwordPolicy']) return 'Password must contain uppercase, lowercase, number, and special character';
-    if (errors['invalidIpAddress']) return 'Please enter a valid IP address';
-    if (errors['invalidSerialNumber']) return errors['invalidSerialNumber'];
+    // Priority order of error checking (specific validators first, required last)
+    const errorKeys = ['alphaNumericUnderscore', 'name', 'email', 'emailDomain', 
+                       'contactNumber', 'passwordPolicy', 'nameNumber', 'nameWithUnderScoreAndDot',
+                       'pattern', 'minlength', 'maxlength', 'min', 'max', 'ipAddress', 'number', 'required'];
+
+    // Find first matching error
+    for (const key of errorKeys) {
+      if (errors[key]) {
+        // Skip 'required' error if field has value (prioritize specific validation errors)
+        if (key === 'required' && hasValue) {
+          continue;
+        }
+
+        // Check for custom message from field config
+        if (customMessages[key]) {
+          return customMessages[key];
+        }
+
+        // Check for default message from validator registry
+        if (VALIDATOR_ERROR_MESSAGES[key]) {
+          return VALIDATOR_ERROR_MESSAGES[key];
+        }
+
+        // Special handling for length validators
+        if (key === 'minlength') {
+          return `Minimum length is ${errors['minlength'].requiredLength} characters`;
+        }
+        if (key === 'maxlength') {
+          return `Maximum length is ${errors['maxlength'].requiredLength} characters`;
+        }
+        if (key === 'min') {
+          return `Minimum value is ${errors['min'].min}`;
+        }
+        if (key === 'max') {
+          return `Maximum value is ${errors['max'].max}`;
+        }
+      }
+    }
     
     return 'Invalid value';
   });
@@ -74,16 +102,14 @@ export class FormErrorComponent {
       }
     });
 
-    // Subscribe to control changes
+    // Subscribe to control changes to trigger reactivity
     effect(() => {
       const ctrl = this.control();
       if (ctrl) {
         ctrl.statusChanges.subscribe(() => {
-          console.log('Status changed - incrementing version');
           this.controlStateVersion.update(v => v + 1);
         });
         ctrl.valueChanges.subscribe(() => {
-          console.log('Value changed - incrementing version');
           this.controlStateVersion.update(v => v + 1);
         });
       }

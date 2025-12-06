@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl, AbstractControlOptions, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { FormField } from '../models';
-import { getValidatorsFromField } from '../utils/validators';
+import { getValidatorsFromField, getErrorMessagesFromField } from '../utils/validators';
 
 /**
  * Form control definition for dynamic form creation
@@ -49,6 +49,7 @@ export class FormService {
   /**
    * Creates a FormGroup from an array of FormField configurations
    * Extracts necessary properties from FormField objects
+   * Also populates errorMessages for each field
    * @param fields - Array of FormField configurations
    * @returns FormGroup with controls for all fields
    */
@@ -58,6 +59,11 @@ export class FormService {
       const validators: ValidatorFn[] = field.validators 
         ? getValidatorsFromField(field.validators)
         : [];
+      
+      // Generate error messages from validators
+      if (field.validators && !field.errorMessages) {
+        field.errorMessages = getErrorMessagesFromField(field.validators);
+      }
       
       return {
         name: field.name,

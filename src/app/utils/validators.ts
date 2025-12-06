@@ -101,9 +101,27 @@ export const VALIDATOR_REGISTRY: Record<string, ValidatorFn | ((param?: unknown)
 };
 
 /**
+ * Default error messages for each validator
+ */
+export const VALIDATOR_ERROR_MESSAGES: Record<string, string> = {
+  required: 'This field is required',
+  alphaNumericUnderscore: 'Only letters, numbers, and underscores are allowed',
+  name: 'Only letters, spaces, and dots are allowed',
+  emailDomain: 'Please enter a valid email domain',
+  nameWithUnderScoreAndDot: 'Only letters, numbers, hyphens, underscores, and dots are allowed',
+  email: 'Please enter a valid email address',
+  contactNumber: 'Please enter a valid phone number',
+  nameNumber: 'Only letters and numbers are allowed',
+  passwordPolicy: 'Password must contain uppercase, lowercase, number, and special character',
+  number: 'Please enter valid numbers',
+  ipAddress: 'Please enter a valid IP address',
+  pattern: 'Please enter a valid format'
+};
+
+/**
  * Helper function to get validators from field configuration
  */
-export function getValidatorsFromField(validators?: { name: string; value?: unknown }[]): ValidatorFn[] {
+export function getValidatorsFromField(validators?: { name: string; value?: unknown; message?: string }[]): ValidatorFn[] {
   if (!validators || validators.length === 0) {
     return [];
   }
@@ -124,4 +142,22 @@ export function getValidatorsFromField(validators?: { name: string; value?: unkn
       return validatorFn as ValidatorFn;
     })
     .filter((v): v is ValidatorFn => v !== null);
+}
+
+/**
+ * Helper function to get error messages from field validators
+ */
+export function getErrorMessagesFromField(validators?: { name: string; value?: unknown; message?: string }[]): Record<string, string> {
+  if (!validators || validators.length === 0) {
+    return {};
+  }
+
+  const messages: Record<string, string> = {};
+  
+  validators.forEach(v => {
+    // Use custom message if provided, otherwise use default
+    messages[v.name] = v.message || VALIDATOR_ERROR_MESSAGES[v.name] || 'Invalid value';
+  });
+
+  return messages;
 }
