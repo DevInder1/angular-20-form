@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, AbstractControlOptions, ValidatorFn, ValidationErrors, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, AbstractControlOptions, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { FormField } from '../models';
+import { getValidatorsFromField } from '../utils/validators';
 
 /**
  * Form control definition for dynamic form creation
@@ -53,22 +54,10 @@ export class FormService {
    */
   createFormGroupFromFields(fields: FormField[]): FormGroup {
     const controlDefinitions: FormControlDefinition[] = fields.map(field => {
-      const validators: ValidatorFn[] = [];
-      
-      // Add required validator if field is required
-      if (field.required) {
-        validators.push(Validators.required);
-      }
-      
-      // Add minLength validator
-      if (field.minLength) {
-        validators.push(Validators.minLength(field.minLength));
-      }
-      
-      // Add maxLength validator
-      if (field.maxLength) {
-        validators.push(Validators.maxLength(field.maxLength));
-      }
+      // Use validators from field configuration if provided
+      const validators: ValidatorFn[] = field.validators 
+        ? getValidatorsFromField(field.validators)
+        : [];
       
       return {
         name: field.name,

@@ -42,6 +42,7 @@ export class FormErrorComponent {
     
     if (!errors) return null;
 
+    // Standard validators
     if (errors['required']) return 'This field is required';
     if (errors['email']) return 'Please enter a valid email address';
     if (errors['minlength']) {
@@ -53,6 +54,11 @@ export class FormErrorComponent {
     if (errors['min']) return `Minimum value is ${errors['min'].min}`;
     if (errors['max']) return `Maximum value is ${errors['max'].max}`;
     if (errors['pattern']) return 'Please enter a valid format';
+    
+    // Custom validators
+    if (errors['passwordPolicy']) return 'Password must contain uppercase, lowercase, number, and special character';
+    if (errors['invalidIpAddress']) return 'Please enter a valid IP address';
+    if (errors['invalidSerialNumber']) return errors['invalidSerialNumber'];
     
     return 'Invalid value';
   });

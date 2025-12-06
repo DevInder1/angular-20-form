@@ -8,7 +8,7 @@ export function getUserFields(): FormField[] {
       type: 'dropdown',
       optionLabel: 'displayText',
       options: [],
-      required: true,
+      validators: [{ name: 'required' }],
       displayTooltip: true,
       isWide: false
     },
@@ -17,7 +17,12 @@ export function getUserFields(): FormField[] {
       name: 'userName',
       type: 'input',
       inputType: 'text',
-      required: true,
+      validators: [
+        { name: 'required' },
+        { name: 'alphaNumericUnderscore' },
+        { name: 'minLength', value: 3 },
+        { name: 'maxLength', value: 20 }
+      ],
       displayTooltip: true,
       isWide: false
     },
@@ -26,7 +31,10 @@ export function getUserFields(): FormField[] {
       name: 'firstName',
       type: 'input',
       inputType: 'text',
-      required: true,
+      validators: [
+        { name: 'required' },
+        { name: 'name' }
+      ],
       displayTooltip: true,
       isWide: false
     },
@@ -35,7 +43,10 @@ export function getUserFields(): FormField[] {
       name: 'lastName',
       type: 'input',
       inputType: 'text',
-      required: true,
+      validators: [
+        { name: 'required' },
+        { name: 'name' }
+      ],
       displayTooltip: true,
       isWide: false
     },
@@ -45,7 +56,7 @@ export function getUserFields(): FormField[] {
       type: 'dropdown',
       optionLabel: 'displayText',
       options: [],
-      required: true,
+      validators: [{ name: 'required' }],
       displayTooltip: true,
       isWide: false
     },
@@ -55,7 +66,7 @@ export function getUserFields(): FormField[] {
       type: 'dropdown',
       options: [],
       optionLabel: 'name',
-      required: true,
+      validators: [{ name: 'required' }],
       displayTooltip: true,
       filter: true,
       isWide: false
@@ -71,7 +82,11 @@ export function getUserFields(): FormField[] {
       name: 'password',
       type: 'password',
       inputType: 'password',
-      required: true,
+      validators: [
+        { name: 'required' },
+        { name: 'passwordPolicy' },
+        { name: 'minLength', value: 8 }
+      ],
       displayTooltip: false,
       isWide: false
     },
@@ -80,7 +95,7 @@ export function getUserFields(): FormField[] {
       name: 'confirmPassword',
       type: 'input',
       inputType: 'password',
-      required: true,
+      validators: [{ name: 'required' }],
       displayTooltip: false,
       isWide: false
     },
@@ -113,7 +128,7 @@ export function getUserFields(): FormField[] {
       optionLabel: 'countryName',
       filter: true,
       options: [],
-      required: true,
+      validators: [{ name: 'required' }],
       displayTooltip: true,
       isWide: false
     },
@@ -122,6 +137,10 @@ export function getUserFields(): FormField[] {
       name: 'zipCode',
       type: 'input',
       inputType: 'text',
+      validators: [
+        { name: 'nameNumber' },
+        { name: 'maxLength', value: 10 }
+      ],
       isWide: false
     },
     {
@@ -129,6 +148,7 @@ export function getUserFields(): FormField[] {
       name: 'contactNo',
       type: 'input',
       inputType: 'text',
+      validators: [{ name: 'contactNumber' }],
       displayTooltip: true,
       isWide: false
     },
@@ -137,7 +157,10 @@ export function getUserFields(): FormField[] {
       name: 'emailAddress',
       type: 'input',
       inputType: 'email',
-      required: true,
+      validators: [
+        { name: 'required' },
+        { name: 'email' }
+      ],
       cssClasses: { 'email-field': true },
       isWide: false
     },
@@ -166,7 +189,7 @@ export function getUserFields(): FormField[] {
       name: 'contactEmail',
       type: 'input',
       inputType: 'email',
-      required: false,
+      validators: [{ name: 'email' }],
       cssClasses: { 'email-field': true },
       isWide: false
     },
