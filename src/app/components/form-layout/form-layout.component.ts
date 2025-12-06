@@ -37,6 +37,21 @@ export class FormLayoutComponent {
     } else {
       console.log('Form invalid, marking all as touched');
       form.markAllAsTouched();
+      this.focusFirstInvalidField();
+    }
+  }
+
+  private focusFirstInvalidField(): void {
+    const form = this.formGroup();
+    const firstInvalidControl = Object.keys(form.controls).find(
+      key => form.get(key)?.invalid
+    );
+
+    if (firstInvalidControl) {
+      setTimeout(() => {
+        const element = document.getElementById(firstInvalidControl) as HTMLElement;
+        element?.focus();
+      }, 100);
     }
   }
 

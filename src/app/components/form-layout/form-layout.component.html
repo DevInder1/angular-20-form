@@ -10,9 +10,20 @@
       </div>
       @if (configuration().isSaveButton) {
         <footer class="actions">
-          <button type="submit" class="btn-primary">Save</button>
+          <button 
+            type="submit" 
+            class="btn-primary"
+            [attr.aria-label]="'Save ' + configuration().label"
+          >
+            Save
+          </button>
           @if (configuration().discardButtonLabel) {
-            <button type="button" class="btn-secondary" (click)="handleDiscard()">
+            <button 
+              type="button" 
+              class="btn-secondary" 
+              (click)="handleDiscard()"
+              [attr.aria-label]="'Discard changes to ' + configuration().label"
+            >
               {{ configuration().discardButtonLabel }}
             </button>
           }

@@ -1,5 +1,6 @@
-import { Component, input, computed, effect, signal } from '@angular/core';
+import { Component, input, computed, effect, signal, inject } from '@angular/core';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 /**
  * Reusable component to display form validation errors
@@ -8,12 +9,14 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
   selector: 'app-form-error',
   template: `
     @if (shouldShowError() && errorMessage()) {
-      <small class="error-message" role="alert">{{ errorMessage() }}</small>
+      <small class="error-message" role="alert" aria-live="polite">{{ errorMessage() }}</small>
     }
   `,
   styleUrl: './form-error.component.scss'
 })
 export class FormErrorComponent {
+  private readonly liveAnnouncer = inject(LiveAnnouncer);
+  
   errors = input<ValidationErrors | null>(null);
   control = input<AbstractControl | null>(null);
   
@@ -55,6 +58,17 @@ export class FormErrorComponent {
   });
   
   constructor() {
+    // Announce errors to screen readers
+    effect(() => {
+      const message = this.errorMessage();
+      const shouldShow = this.shouldShowError();
+      
+      if (shouldShow && message) {
+        this.liveAnnouncer.announce(message, 'polite');
+      }
+    });
+
+    // Subscribe to control changes
     effect(() => {
       const ctrl = this.control();
       if (ctrl) {
