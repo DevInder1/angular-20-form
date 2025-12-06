@@ -1177,6 +1177,7 @@ Perfect! I've created a comprehensive architecture.md document covering:
 - Cache headers
 - Security headers
 - Performance budgets
+  -Terser to minification
 
 . ✅ **Modern Browser Target** - ES2022+, smaller polyfills
 
@@ -1195,5 +1196,6 @@ Perfect! I've created a comprehensive architecture.md document covering:
   }
 }
 
+Terser to minification
 The document is ready to use as a reference guide for building production-grade Angular 20+ applications with Nx! 🚀
 ```
