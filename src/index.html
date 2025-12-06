@@ -8,40 +8,27 @@
     <meta name="description" content="Angular 20 Form Application" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     
-    <!-- Preconnect to improve loading performance -->
+    <!-- DNS Prefetch & Preconnect -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Inline critical CSS will be injected here by Vite -->
+    <!-- Critical CSS - Inline for instant render -->
     <style>
-      /* Critical CSS for initial render */
-      app-root {
-        display: block;
-        min-height: 100vh;
-      }
-      
-      /* Prevent layout shift during loading */
-      body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      }
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      html{font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#333;background:#f5f5f5}
+      app-root{display:block;min-height:100vh}
+      .spinner{display:flex;align-items:center;justify-content:center;min-height:100vh;font-size:1.125rem;color:#666}
+      .spinner::after{content:'';width:40px;height:40px;margin-left:12px;border:4px solid #f3f3f3;border-top:4px solid #3498db;border-radius:50%;animation:spin 1s linear infinite}
+      @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+      @media (prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}
     </style>
   </head>
   <body>
     <app-root>
-      <!-- Loading indicator -->
-      <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-        <div style="text-align: center;">
-          <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-          <p style="margin-top: 16px; color: #666;">Loading...</p>
-        </div>
-      </div>
+      <div class="spinner">Loading application</div>
     </app-root>
-    
-    <style>
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    </style>
   </body>
 </html>
