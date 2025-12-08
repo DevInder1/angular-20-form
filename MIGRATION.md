@@ -2214,7 +2214,11 @@ User Flow:
 - [ ] **Implement Virtual Scrolling for Lists**
 
   ```html
-  <cdk-virtual-scroll-viewport></cdk-virtual-scroll-viewport>
+  <cdk-virtual-scroll-viewport itemSize="120">
+    @for (item of items(); track item.id) {
+    <app-item [item]="item" />
+    }
+  </cdk-virtual-scroll-viewport>
   ```
 
 - [ ] **Add Performance Monitoring**
@@ -2222,6 +2226,288 @@ User Flow:
   // Track Core Web Vitals
   import { PerformanceService } from './core/services/performance.service';
   ```
+
+---
+
+### Advanced Optimization: Virtual Scrolling + Progressive Rendering
+
+#### Why Virtual Scrolling?
+
+**Problem:** Rendering 1000+ items in a list causes performance issues:
+
+```typescript
+// ❌ CURRENT: Render all 1000 items at once
+@Component({
+  template: `
+    <div class="list">
+      @for (user of users(); track user.id) {
+        <app-user-card [user]="user" />
+      }
+    </div>
+  `
+})
+// Problem:
+// - 1000 DOM nodes created immediately
+// - Change detection runs on all 1000 components
+// - Memory usage: ~50 MB
+// - Initial render: 800ms
+```
+
+**Solution: CDK Virtual Scroll** renders only visible items:
+
+```typescript
+// ✅ NEW: Only render visible items (~20)
+import { ScrollingModule } from '@angular/cdk/scrolling';
+
+@Component({
+  selector: 'app-user-list',
+  template: `
+    <cdk-virtual-scroll-viewport
+      itemSize="120"
+      class="user-viewport"
+      [minBufferPx]="600"
+      [maxBufferPx]="900"
+    >
+      @for (user of users(); track user.id) {
+      <app-user-card [user]="user" />
+      }
+    </cdk-virtual-scroll-viewport>
+  `,
+  styles: [
+    `
+      .user-viewport {
+        height: 100vh;
+        width: 100%;
+      }
+    `,
+  ],
+  imports: [ScrollingModule, UserCardComponent],
+})
+export class UserListComponent {
+  users = signal<User[]>([]);
+}
+```
+
+**Performance Impact:**
+
+| Metric             | Without Virtual Scroll | With Virtual Scroll | Improvement   |
+| ------------------ | ---------------------- | ------------------- | ------------- |
+| DOM Nodes          | 1,000                  | 20                  | **-98%**      |
+| Memory Usage       | 50 MB                  | 2 MB                | **-96%**      |
+| Initial Render     | 800ms                  | 50ms                | **-94%**      |
+| Scroll Performance | Janky (20 FPS)         | Smooth (60 FPS)     | **3x better** |
+
+#### Progressive Rendering with @defer
+
+**Combine virtual scroll with deferred loading:**
+
+```typescript
+@Component({
+  selector: 'app-product-list',
+  template: `
+    <!-- Header always visible -->
+    <div class="header">
+      <h1>Products ({{ products().length }})</h1>
+      <button (click)="addProduct()">Add Product</button>
+    </div>
+
+    <!-- Virtual scroll for list -->
+    <cdk-virtual-scroll-viewport itemSize="200" class="product-viewport">
+      @for (product of products(); track product.id) {
+      <div class="product-card">
+        <!-- Basic info (always rendered) -->
+        <h3>{{ product.name }}</h3>
+        <p class="price">{{ product.price | currency }}</p>
+
+        <!-- Heavy component (deferred until visible) -->
+        @defer (on viewport) {
+        <app-product-details [product]="product" />
+        <app-product-reviews [productId]="product.id" />
+        } @placeholder {
+        <div class="skeleton">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+        </div>
+        } @loading (minimum 500ms) {
+        <div class="spinner">Loading...</div>
+        }
+      </div>
+      }
+    </cdk-virtual-scroll-viewport>
+  `,
+  styles: [
+    `
+      .product-viewport {
+        height: calc(100vh - 80px);
+      }
+
+      .product-card {
+        height: 200px;
+        padding: 1rem;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .skeleton {
+        .skeleton-line {
+          height: 20px;
+          background: linear-gradient(
+            90deg,
+            #f0f0f0 25%,
+            #e0e0e0 50%,
+            #f0f0f0 75%
+          );
+          background-size: 200% 100%;
+          animation: loading 1.5s infinite;
+          margin: 0.5rem 0;
+          border-radius: 4px;
+        }
+      }
+
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    `,
+  ],
+  imports: [ScrollingModule, CurrencyPipe],
+})
+export class ProductListComponent {
+  products = signal<Product[]>([]);
+}
+```
+
+**Benefits:**
+
+1. **Lazy Load Heavy Components**: Product details only load when scrolled into view
+2. **Skeleton UI**: Shows placeholder while loading
+3. **Minimum Loading Time**: Prevents flash of loading spinner
+4. **Memory Efficient**: Unloads off-screen components
+
+#### Advanced: Variable Item Height
+
+**For items with different heights:**
+
+```typescript
+import {
+  ScrollingModule,
+  CdkVirtualScrollViewport,
+} from '@angular/cdk/scrolling';
+
+@Component({
+  selector: 'app-message-list',
+  template: `
+    <cdk-virtual-scroll-viewport
+      class="message-viewport"
+      [itemSize]="100"
+      [autosize]="true"
+    >
+      @for (message of messages(); track message.id) {
+      <div class="message" [class.expanded]="message.expanded">
+        <div class="message-header">
+          <strong>{{ message.sender }}</strong>
+          <span class="time">{{ message.time | date : 'short' }}</span>
+        </div>
+        <div class="message-body">
+          {{ message.expanded ? message.fullText : message.preview }}
+        </div>
+        <button (click)="toggleExpand(message)">
+          {{ message.expanded ? 'Collapse' : 'Expand' }}
+        </button>
+      </div>
+      }
+    </cdk-virtual-scroll-viewport>
+  `,
+  imports: [ScrollingModule, DatePipe],
+})
+export class MessageListComponent {
+  messages = signal<Message[]>([]);
+
+  toggleExpand(message: Message) {
+    // Update message state
+    this.messages.update((msgs) =>
+      msgs.map((m) =>
+        m.id === message.id ? { ...m, expanded: !m.expanded } : m
+      )
+    );
+  }
+}
+```
+
+#### Performance Monitoring
+
+```typescript
+// core/services/performance.service.ts
+import { Injectable, inject } from '@angular/core';
+import { PerformanceObserver } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+export class PerformanceService {
+  trackVirtualScrollPerformance(viewportId: string) {
+    // Track scroll performance
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.entryType === 'measure') {
+          console.log(`[${viewportId}] Scroll render time:`, entry.duration);
+
+          // Send to analytics
+          if (entry.duration > 16.67) {
+            console.warn(`⚠️ Slow scroll detected: ${entry.duration}ms`);
+          }
+        }
+      }
+    });
+
+    observer.observe({ entryTypes: ['measure'] });
+  }
+
+  // Track Core Web Vitals
+  trackWebVitals() {
+    // Largest Contentful Paint (LCP)
+    new PerformanceObserver((list) => {
+      const entries = list.getEntries();
+      const lastEntry = entries[entries.length - 1];
+      console.log('LCP:', lastEntry.renderTime || lastEntry.loadTime);
+    }).observe({ entryTypes: ['largest-contentful-paint'] });
+
+    // First Input Delay (FID)
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        console.log('FID:', entry.processingStart - entry.startTime);
+      }
+    }).observe({ entryTypes: ['first-input'] });
+
+    // Cumulative Layout Shift (CLS)
+    let clsScore = 0;
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (!(entry as any).hadRecentInput) {
+          clsScore += (entry as any).value;
+          console.log('CLS:', clsScore);
+        }
+      }
+    }).observe({ entryTypes: ['layout-shift'] });
+  }
+}
+```
+
+**Usage:**
+
+```typescript
+@Component({
+  selector: 'app-root',
+})
+export class AppComponent {
+  private perfService = inject(PerformanceService);
+
+  ngOnInit() {
+    this.perfService.trackWebVitals();
+  }
+}
+```
 
 ---
 
@@ -2603,6 +2889,57 @@ Migrating 130 modules from AngularJS to Angular 21 is achievable with:
 **You'll emerge with a modern, performant Angular 21 application! 🚀**
 
 ---
+
+Initial Bundle:
+├── main.js: 300 KB
+│ ├── Platform: 120 KB
+│ ├── Interfaces: 30 KB ❌ Can be removed
+│ ├── Tiles config: 50 KB ❌ Load from API
+│ └── Wizards: 80 KB ❌ Defer load
+├── vendor.js: 500 KB
+└── polyfills.js: 50 KB
+
+Total: 850 KB gzipped: 300 KB
+
+Rendering Timeline:
+0.0s → Request
+0.5s → Download JS (850 KB)
+2.0s → Parse & execute
+2.5s → First paint (tiles visible)
+3.5s → Interactive (if user clicks tile)
+
+Wasted Resources:
+
+- 160 KB never used (tiles + wizards)
+- 10,000 change detection cycles/sec (Zone.js)
+- All 20 tiles rendered (user clicks 2-3)
+
+Initial Bundle:
+├── main.js: 150 KB ✅ -50%
+│ ├── Platform: 120 KB
+│ └── Core only: 30 KB
+├── vendor.js: 250 KB ✅ Tree-shaken
+└── polyfills.js: 50 KB
+
+Total: 450 KB gzipped: 150 KB ✅ -50%
+
+Additional Chunks (lazy):
+├── dashboard.js: 60 KB (preloaded after 2s)
+├── procurement.js: 50 KB (on navigation)
+└── wizards.js: 40 KB (on first use)
+
+Rendering Timeline:
+0.0s → Request
+0.5s → Pre-rendered HTML arrives (SSR)
+0.8s → First paint ✅ 69% faster!
+1.0s → Hydrate + interactive ✅ 71% faster!
+1.5s → Dashboard preloaded in background
+
+Optimized Resources:
+
+- 0 KB wasted (all on-demand)
+- 100 change detection cycles/sec ✅ -99%
+- Only 6 visible tiles rendered ✅ -70%
 
 ## Additional Resources
 
