@@ -1,0 +1,169 @@
+<div class="generic-table-container">
+  <!-- Header with search and actions -->
+  @if (isFilterable()) {
+    <div class="table-header">
+      <div class="search-container">
+        <span class="p-input-icon-right">
+          @if (searchTerm()) {
+            <i class="pi pi-times cursor-pointer" (click)="clearFilter()"></i>
+          } @else {
+            <i class="pi pi-search"></i>
+          }
+          <input
+            pInputText
+            type="text"
+            [value]="searchTerm()"
+            (input)="onFilterChange($any($event.target).value)"
+            placeholder="Search..."
+            class="search-input"
+          />
+        </span>
+      </div>
+
+      @if (isSelectable() && selectedRows().length > 0) {
+        <div class="selection-info">
+          <span>{{ selectedRows().length }} row(s) selected</span>
+          <p-button
+            label="Clear"
+            icon="pi pi-times"
+            [text]="true"
+            (onClick)="selectedRows.set([])"
+          />
+        </div>
+      }
+    </div>
+  }
+
+  <!-- PrimeNG Table -->
+  <p-table
+    #dataTable
+    [value]="displayedData()"
+    [columns]="columns()"
+    [dataKey]="dataKey()"
+    [loading]="loading()"
+    [rowHover]="true"
+    [styleClass]="config().styleClass || 'p-datatable-gridlines'"
+    [tableStyle]="config().tableStyle || { 'min-width': '50rem' }"
+    [scrollable]="config().scrollable || false"
+    [scrollHeight]="config().scrollHeight || '400px'"
+    [virtualScroll]="config().virtualScroll || false"
+    [virtualScrollItemSize]="config().virtualScrollItemSize || 72"
+    [stateStorage]="config().stateStorage || 'session'"
+    [stateKey]="config().stateKey"
+    (onSort)="onSortChangeInternal($event)"
+  >
+    <!-- Table Header -->
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        <!-- Select all checkbox -->
+        @if (showSelectAll()) {
+          <th style="width: 3rem">
+            <input
+              type="checkbox"
+              [checked]="allSelected()"
+              [indeterminate]="someSelected()"
+              (click)="toggleSelectAll($event)"
+            />
+          </th>
+        }
+
+        <!-- Column headers -->
+        @for (col of columns; track col.field) {
+          <th
+            [pSortableColumn]="col.sortable !== false ? col.field : null"
+            [ngClass]="col.class"
+            [ngStyle]="{ width: col.width }"
+          >
+            <div class="header-content">
+              <span>{{ col.header }}</span>
+              @if (col.sortable !== false && col.type !== 'actions') {
+                <p-sortIcon [field]="col.field" />
+              }
+            </div>
+          </th>
+        }
+      </tr>
+    </ng-template>
+
+    <!-- Table Body -->
+    <ng-template pTemplate="body" let-rowData let-columns="columns">
+      <tr
+        [class.selected-row]="isRowSelected(rowData)"
+        (click)="onRowClick(rowData)"
+      >
+        <!-- Selection checkbox -->
+        @if (isSelectable()) {
+          <td>
+            <input
+              type="checkbox"
+              [checked]="isRowSelected(rowData)"
+              (click)="toggleRowSelection(rowData, $event)"
+            />
+          </td>
+        }
+
+        <!-- Data cells -->
+        @for (col of columns; track col.field) {
+          <td [ngClass]="col.class">
+            @switch (col.template || col.type) {
+              @case ('badge') {
+                <p-tag [value]="getCellValue(rowData, col)" />
+              }
+              @case ('boolean') {
+                @if (rowData[col.field]) {
+                  <i class="pi pi-check text-green-500"></i>
+                } @else {
+                  <i class="pi pi-times text-red-500"></i>
+                }
+              }
+              @case ('actions') {
+                <div class="action-buttons">
+                  <ng-content select="[actions]" />
+                </div>
+              }
+              @default {
+                {{ getCellValue(rowData, col) }}
+              }
+            }
+          </td>
+        }
+      </tr>
+    </ng-template>
+
+    <!-- Empty message -->
+    <ng-template pTemplate="emptymessage" let-columns>
+      <tr>
+        <td [attr.colspan]="columns.length + (isSelectable() ? 1 : 0)" class="text-center">
+          @if (loading()) {
+            <div class="loading-message">
+              <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+              <p>Loading data...</p>
+            </div>
+          } @else {
+            <div class="empty-message">
+              <i class="pi pi-inbox" style="font-size: 3rem"></i>
+              <p>No data available</p>
+            </div>
+          }
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Pagination -->
+  @if (isPaginated() && hasData()) {
+    <div class="pagination-container">
+      <p-paginator
+        [first]="currentPage() * pageSize()"
+        [rows]="pageSize()"
+        [totalRecords]="totalRecordsComputed()"
+        [rowsPerPageOptions]="getRowsPerPageOptions()"
+        (onPageChange)="onPageChangeInternal($event)"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first} - {last} of {totalRecords}"
+        [showPageLinks]="true"
+        [showFirstLastIcon]="true"
+      />
+    </div>
+  }
+</div>
