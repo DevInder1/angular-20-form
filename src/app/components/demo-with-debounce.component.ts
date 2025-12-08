@@ -199,6 +199,9 @@ export class DemoWithDebounceComponent {
   protected readonly computeCount = signal(0);
   protected readonly inputChangeCount = signal(0);
 
+  // Track compute count outside of computed
+  private computeCounter = 0;
+
   constructor() {
     // Debounce effect
     let timeoutId: number | undefined;
@@ -225,12 +228,17 @@ export class DemoWithDebounceComponent {
   // ✅ Computed - only recalculates when searchTerm() or users() change
   // NOT when searchInput() changes!
   protected readonly filteredUsers = computed(() => {
-    this.computeCount.update(n => n + 1);
-    
     const term = this.searchTerm().toLowerCase();
     const allUsers = this.users();
     
-    console.log(`🚀 Compute #${this.computeCount()}: Filtering ${allUsers.length} users for "${term}"`);
+    // Track computation outside signal context
+    this.computeCounter++;
+    const currentCount = this.computeCounter;
+    
+    console.log(`🚀 Compute #${currentCount}: Filtering ${allUsers.length} users for "${term}"`);
+    
+    // Update count asynchronously after computed returns
+    queueMicrotask(() => this.computeCount.set(currentCount));
     
     return allUsers.filter(user => 
       user.name.toLowerCase().includes(term) ||

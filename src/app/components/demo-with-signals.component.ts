@@ -179,17 +179,24 @@ export class DemoWithSignalsComponent {
   protected readonly users = signal<User[]>(this.generateUsers(100));
   protected readonly searchTerm = signal('');
   protected readonly unrelatedValue = signal(0);
+  
+  // Track compute count outside of computed
+  private computeCounter = 0;
   protected readonly computeCount = signal(0);
 
   // ✅ Computed - only recalculates when dependencies change
   protected readonly filteredUsers = computed(() => {
-    // Track computation
-    this.computeCount.update(n => n + 1);
-    
     const term = this.searchTerm().toLowerCase();
     const allUsers = this.users();
     
-    console.log(`✅ With Signals - Compute #${this.computeCount()}: Filtering ${allUsers.length} users for "${term}"`);
+    // Track computation outside signal context
+    this.computeCounter++;
+    const currentCount = this.computeCounter;
+    
+    console.log(`✅ With Signals - Compute #${currentCount}: Filtering ${allUsers.length} users for "${term}"`);
+    
+    // Update count asynchronously after computed returns
+    queueMicrotask(() => this.computeCount.set(currentCount));
     
     return allUsers.filter(user => 
       user.name.toLowerCase().includes(term) ||
