@@ -26,7 +26,7 @@ export class PerformanceService {
       performance.measure('bootstrap', 'navigationStart', 'app-interactive');
       const measure = performance.getEntriesByName('bootstrap')[0];
       console.log(`🚀 Bootstrap: ${Math.round(measure.duration)}ms`);
-    } catch (e) {
+    } catch {
       // navigationStart might not be available in all browsers
     }
     
@@ -44,12 +44,12 @@ export class PerformanceService {
     try {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1] as any;
+        const lastEntry = entries[entries.length - 1] as PerformanceEntry & { renderTime?: number; loadTime?: number };
         console.log(`📊 LCP: ${Math.round(lastEntry.renderTime || lastEntry.loadTime)}ms`);
       });
       
       observer.observe({ type: 'largest-contentful-paint', buffered: true });
-    } catch (e) {
+    } catch {
       console.warn('LCP observation not supported');
     }
   }
@@ -58,13 +58,15 @@ export class PerformanceService {
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const inp = (entry as any).duration;
-          console.log(`⚡ INP: ${Math.round(inp)}ms`);
+          const inp = (entry as PerformanceEntry & { duration?: number }).duration;
+          if (inp) {
+            console.log(`⚡ INP: ${Math.round(inp)}ms`);
+          }
         }
       });
       
-      observer.observe({ type: 'event', buffered: true, durationThreshold: 40 });
-    } catch (e) {
+      observer.observe({ type: 'event', buffered: true } as PerformanceObserverInit);
+    } catch {
       console.warn('INP observation not supported');
     }
   }
@@ -74,15 +76,16 @@ export class PerformanceService {
       let clsValue = 0;
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!(entry as any).hadRecentInput) {
-            clsValue += (entry as any).value;
+          const clsEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
+          if (!clsEntry.hadRecentInput && clsEntry.value) {
+            clsValue += clsEntry.value;
           }
         }
         console.log(`📐 CLS: ${clsValue.toFixed(4)}`);
       });
       
       observer.observe({ type: 'layout-shift', buffered: true });
-    } catch (e) {
+    } catch {
       console.warn('CLS observation not supported');
     }
   }
@@ -138,7 +141,7 @@ export class PerformanceService {
   reportMetrics(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     
-    const navigation = performance.getEntriesByType('navigation')[0] as any;
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
     
     if (navigation) {
       console.group('📊 Performance Metrics');
@@ -146,7 +149,7 @@ export class PerformanceService {
       console.log(`TCP Connection: ${Math.round(navigation.connectEnd - navigation.connectStart)}ms`);
       console.log(`Request Time: ${Math.round(navigation.responseStart - navigation.requestStart)}ms`);
       console.log(`Response Time: ${Math.round(navigation.responseEnd - navigation.responseStart)}ms`);
-      console.log(`DOM Processing: ${Math.round(navigation.domComplete - navigation.domLoading)}ms`);
+      console.log(`DOM Processing: ${Math.round(navigation.domComplete - navigation.domInteractive)}ms`);
       console.log(`Load Complete: ${Math.round(navigation.loadEventEnd - navigation.loadEventStart)}ms`);
       console.groupEnd();
     }

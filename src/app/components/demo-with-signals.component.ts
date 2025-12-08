@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, computed, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 interface User {

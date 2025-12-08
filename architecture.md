@@ -1199,3 +1199,14 @@ Perfect! I've created a comprehensive architecture.md document covering:
 Terser to minification
 The document is ready to use as a reference guide for building production-grade Angular 20+ applications with Nx! 🚀
 ```
+
+Test 3: Memory Efficiency
+
+1. Open Chrome DevTools → Memory tab2. Take heap snapshot3. Type rapidly in "Without Signals"4. Take another snapshot → See many array allocations5. Type rapidly in "With Signals"6. Take snapshot → Cached, no new allocations!
+📊 Performance Comparison Table
+The demo page includes a live comparison showing:
+
+Scenario Without Signals With Signals With Debounce
+Type "User 5" 18 ops 6 ops 1 op
+Unrelated change 3 ops 0 ops ✅ 0 ops ✅
+Memory New arrays Cached Cached

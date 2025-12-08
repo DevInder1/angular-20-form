@@ -5,7 +5,8 @@ import {
   input, 
   output,
   PLATFORM_ID,
-  afterNextRender
+  afterNextRender,
+  OnDestroy
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -19,9 +20,9 @@ import { isPlatformBrowser } from '@angular/common';
  * </div>
  */
 @Directive({
-  selector: '[appLazyLoad]'
+  selector: '[appLazyLoad]',
 })
-export class LazyLoadDirective {
+export class LazyLoadDirective implements OnDestroy {
   private readonly el = inject(ElementRef);
   private readonly platformId = inject(PLATFORM_ID);
   
