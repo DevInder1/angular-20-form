@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 interface User {
   id: number;
@@ -20,7 +21,7 @@ interface User {
 @Component({
   selector: 'app-demo-with-debounce',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ScrollingModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="demo-container">
@@ -52,17 +53,16 @@ interface User {
         </div>
       }
 
-      <div class="user-list">
-        @for (user of filteredUsers(); track user.id) {
-          <div class="user-card">
-            <strong>{{ user.name }}</strong>
-            <small>{{ user.email }}</small>
-            <span class="badge">{{ user.department }}</span>
-          </div>
-        } @empty {
+      <cdk-virtual-scroll-viewport itemSize="72" class="user-list">
+        <div *cdkVirtualFor="let user of filteredUsers(); trackBy: trackByUserId" class="user-card">
+          <strong>{{ user.name }}</strong>
+          <small>{{ user.email }}</small>
+          <span class="badge">{{ user.department }}</span>
+        </div>
+        @if (filteredUsers().length === 0) {
           <div class="empty-state">No users found</div>
         }
-      </div>
+      </cdk-virtual-scroll-viewport>
 
       <div class="explanation">
         <p><strong>What happens:</strong></p>
@@ -72,7 +72,8 @@ interface User {
           <li>🚀 Type "User 5" fast = only 1 filter operation!</li>
           <li>🚀 Without debounce = 6 operations (U-s-e-r- -5)</li>
           <li>🚀 75% reduction in filter operations!</li>
-          <li>🚀 Smoother typing experience (no lag)</li>
+          <li>🚀 Virtual scrolling renders only visible items (1000 users)</li>
+          <li>🚀 Smoother typing experience with best performance!</li>
         </ul>
       </div>
     </div>
@@ -138,8 +139,7 @@ interface User {
     }
 
     .user-list {
-      max-height: 400px;
-      overflow-y: auto;
+      height: 400px;
       border: 1px solid #ddd;
       border-radius: 4px;
       background: white;
@@ -194,7 +194,7 @@ export class DemoWithDebounceComponent {
   // Separate input signal from search signal
   protected readonly searchInput = signal('');  // Raw input (updates immediately)
   protected readonly searchTerm = signal('');    // Debounced value (updates after delay)
-  protected readonly users = signal<User[]>(this.generateUsers(100));
+  protected readonly users = signal<User[]>(this.generateUsers(1000));
   protected readonly unrelatedValue = signal(0);
   protected readonly computeCount = signal(0);
   protected readonly inputChangeCount = signal(0);
@@ -249,6 +249,10 @@ export class DemoWithDebounceComponent {
   triggerUnrelatedChange(): void {
     this.unrelatedValue.update(n => n + 1);
     console.log('🚀 Unrelated change triggered, but filteredUsers() NOT recomputed!');
+  }
+
+  trackByUserId(_index: number, user: User): number {
+    return user.id;
   }
 
   private generateUsers(count: number): User[] {

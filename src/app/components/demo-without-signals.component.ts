@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 interface User {
   id: number;
@@ -20,7 +21,7 @@ interface User {
 @Component({
   selector: 'app-demo-without-signals',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ScrollingModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="demo-container">
@@ -45,17 +46,16 @@ interface User {
         <span class="stat">Filtered: {{ getFilteredUsers().length }}</span>
       </div>
 
-      <div class="user-list">
-        @for (user of getFilteredUsers(); track user.id) {
-          <div class="user-card">
-            <strong>{{ user.name }}</strong>
-            <small>{{ user.email }}</small>
-            <span class="badge">{{ user.department }}</span>
-          </div>
-        } @empty {
+      <cdk-virtual-scroll-viewport itemSize="72" class="user-list">
+        <div *cdkVirtualFor="let user of getFilteredUsers(); trackBy: trackByUserId" class="user-card">
+          <strong>{{ user.name }}</strong>
+          <small>{{ user.email }}</small>
+          <span class="badge">{{ user.department }}</span>
+        </div>
+        @if (getFilteredUsers().length === 0) {
           <div class="empty-state">No users found</div>
         }
-      </div>
+      </cdk-virtual-scroll-viewport>
 
       <div class="explanation">
         <p><strong>What happens:</strong></p>
@@ -65,6 +65,7 @@ interface User {
           <li>⚠️ Creates new array each time (memory waste)</li>
           <li>⚠️ Filter count increases even when result is same</li>
           <li>❌ Template reads getFilteredUsers() 3 times = 3 filter operations!</li>
+          <li>✅ Virtual scrolling renders only visible items (performance boost!)</li>
         </ul>
       </div>
     </div>
@@ -120,8 +121,7 @@ interface User {
     }
 
     .user-list {
-      max-height: 400px;
-      overflow-y: auto;
+      height: 400px;
       border: 1px solid #ddd;
       border-radius: 4px;
       background: white;
@@ -173,7 +173,7 @@ interface User {
   `]
 })
 export class DemoWithoutSignalsComponent {
-  users: User[] = this.generateUsers(100);
+  users: User[] = this.generateUsers(1000);
   searchTerm = '';
   filterCount = 0;
   unrelatedValue = 0;
@@ -199,6 +199,10 @@ export class DemoWithoutSignalsComponent {
       user.name.toLowerCase().includes(term) ||
       user.email.toLowerCase().includes(term)
     );
+  }
+
+  trackByUserId(_index: number, user: User): number {
+    return user.id;
   }
 
   private generateUsers(count: number): User[] {
