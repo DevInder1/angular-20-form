@@ -122,9 +122,16 @@ interface User {
 
     .user-list {
       height: 400px;
+      width: 100%;
+    }
+
+    cdk-virtual-scroll-viewport {
+      height: 400px;
+      width: 100%;
       border: 1px solid #ddd;
       border-radius: 4px;
       background: white;
+      display: block;
     }
 
     .user-card {
