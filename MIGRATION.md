@@ -1598,7 +1598,7 @@ From the **TS Front-End Structure** and **Interfaces/Preload Modules** diagrams,
 
 **Current Loading Pattern:**
 
-```typescript
+````typescript
 // ❌ CURRENT: Mixed eager/lazy loading
 const currentStrategy = {
   eager: [
@@ -1612,7 +1612,153 @@ const currentStrategy = {
     'feature components', // ✅ Good
   ],
 };
-```
+
+**Current Preload Module Pattern (From Diagram):**
+
+```typescript
+// ❌ CURRENT: Preload module structure
+// platform-common/preload/module-preload-info-base.ts
+
+export interface IModulePreloadInfoBase {
+  moduleName: string;
+  getRoutes(): Routes;
+  getRouteInfos(): ISubModuleRouteInfo[];
+}
+
+export interface ITile {
+  id: string;
+  title: string;
+  icon: string;
+  route: string;
+  lazyModule?: () => Promise<any>;
+}
+
+export interface IWizard {
+  id: string;
+  name: string;
+  component: Type<any>;
+}
+
+// Preloaded desktop tiles (loaded BEFORE user sees anything)
+export const DESKTOP_TILES: ITile[] = [
+  {
+    id: 'procurement',
+    title: 'Procurement',
+    icon: 'pi-shopping-cart',
+    route: '/procurement',
+    lazyModule: () => import('../../features/procurement/procurement.module'),
+  },
+  {
+    id: 'defect',
+    title: 'Defect Management',
+    icon: 'pi-exclamation-triangle',
+    route: '/defect',
+    lazyModule: () => import('../../features/defect/defect.module'),
+  },
+  {
+    id: 'construction',
+    title: 'Construction System',
+    icon: 'pi-building',
+    route: '/construction-system',
+    lazyModule: () => import('../../features/construction/construction.module'),
+  },
+  // ... 17 more tiles (all loaded eagerly!)
+];
+
+// Preloaded wizards (loaded even if never used)
+export const WIZARDS: IWizard[] = [
+  { id: 'project-wizard', name: 'New Project', component: ProjectWizardComponent },
+  { id: 'user-wizard', name: 'New User', component: UserWizardComponent },
+  { id: 'order-wizard', name: 'New Order', component: OrderWizardComponent },
+  // ... 10 more wizards
+];
+
+// LazyInjectable registration (0..p cardinality)
+export const LAZY_INJECTABLES = new InjectionToken<LazyInjectableInfo[]>(
+  'LAZY_INJECTABLES'
+);
+
+Impact: +50 KB to main bundle
+Problem: User may only click 2-3 tiles in a session
+Solution: Lazy load tile configurations from API
+
+Impact: +80 KB to main bundle
+Problem: Wizards used rarely (5% of sessions)
+Solution: Load wizard on first use with @defer
+
+// Current: interfaces/user.ts, interfaces/order.ts, etc.
+export interface IUser { ... }
+export interface IOrder { ... }
+// ... 100+ interfaces
+
+// Impact: +30 KB (TypeScript types are removed at compile time but
+// the module structure remains)
+
+
+┌──────────────────────────────────────────────────────────┐
+│ 0.0s: User navigates to app                              │
+├──────────────────────────────────────────────────────────┤
+│ 0.5s: Download main.js (300 KB)                          │
+│       ├── Platform modules                               │
+│       ├── ALL interfaces (30 KB)                         │
+│       ├── ALL desktop tiles config (50 KB)               │
+│       └── ALL wizard components (80 KB)                  │
+├──────────────────────────────────────────────────────────┤
+│ 1.5s: Parse & execute JavaScript                         │
+│       └── Register 20+ tiles, 10+ wizards                │
+├──────────────────────────────────────────────────────────┤
+│ 2.0s: Angular bootstrap                                  │
+│       └── Initialize preload module                      │
+├──────────────────────────────────────────────────────────┤
+│ 2.5s: First paint (desktop tiles visible)                │
+│       └── ALL tiles rendered (even if user clicks none)  │
+├──────────────────────────────────────────────────────────┤
+│ 3.0s: User clicks "Procurement" tile                     │
+│       └── Download procurement.module.js (100 KB)        │
+├──────────────────────────────────────────────────────────┤
+│ 3.5s: Procurement feature rendered                       │
+└──────────────────────────────────────────────────────────┘
+
+Total Time to Interactive: 3.5s
+Wasted Bundle: 160 KB (tiles + wizards never used)
+
+
+
+// ✅ NEW: Lazy-load wizards on first use
+@Component({
+  selector: 'app-project-page',
+  template: `
+    <button (click)="showWizard = true">Create New Project</button>
+
+    @defer (when showWizard) {
+      <app-project-wizard (close)="showWizard = false" />
+    } @placeholder {
+      <!-- Nothing rendered until button clicked -->
+    } @loading {
+      <div class="spinner">Loading wizard...</div>
+    }
+  `,
+})
+export class ProjectPageComponent {
+  showWizard = signal(false);
+}
+
+// Wizard component (only loaded when defer triggers)
+@Component({
+  selector: 'app-project-wizard',
+  template: `
+    <p-dialog [visible]="true">
+      <form [formGroup]="projectForm">
+        <!-- Wizard steps -->
+      </form>
+    </p-dialog>
+  `,
+})
+export class ProjectWizardComponent {
+  // Only loaded when user clicks "Create New Project"
+}
+
+````
 
 #### 2. Dependency Injection & Lazy Loading (From Architecture Diagram)
 
