@@ -1,7 +1,12 @@
 <div class="user-container">
+  <nav class="demo-nav">
+    <a routerLink="/">User Form</a>
+    <a routerLink="/demo">Rendering Demo</a>
+  </nav>
+  
   <h2>User Management</h2>
-    <app-form-layout
-      [formGroup]="userFormGroup()"
-      [configuration]="formConfiguration()"
-    />
+  <app-form-layout
+    [formGroup]="userFormGroup()"
+    [configuration]="formConfiguration()"
+  />
 </div>

@@ -6,6 +6,10 @@ export const appRoutes: Route[] = [
     loadComponent: () => import('./components/user/user.component').then(m => m.UserComponent)
   },
   {
+    path: 'demo',
+    loadComponent: () => import('./components/rendering-demo.component').then(m => m.RenderingDemoComponent)
+  },
+  {
     path: '**',
     redirectTo: ''
   }

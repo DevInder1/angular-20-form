@@ -1,12 +1,13 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { FormLayoutComponent } from '../form-layout/form-layout.component';
 import { getUserFields } from '../../utils/user-fields';
 import { FormService } from '../../services/form.service';
 
 @Component({
   selector: 'app-user',
-  imports: [FormLayoutComponent, ReactiveFormsModule],
+  imports: [FormLayoutComponent, ReactiveFormsModule, RouterLink],
   templateUrl: './user.component.html',
   styleUrl: './user.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

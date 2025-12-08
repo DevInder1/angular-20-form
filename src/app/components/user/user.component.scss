@@ -3,6 +3,33 @@
   max-width: 1400px;
   margin: 0 auto;
 
+  .demo-nav {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+
+    a {
+      padding: 8px 16px;
+      text-decoration: none;
+      color: #4b5563;
+      border-radius: 4px;
+      font-weight: 500;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f3f4f6;
+        color: #1f2937;
+      }
+
+      &.active {
+        background: #3b82f6;
+        color: white;
+      }
+    }
+  }
+
   h2 {
     color: var(--primary-color);
     margin-bottom: 1.5rem;
