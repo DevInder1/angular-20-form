@@ -201,13 +201,9 @@ export class DemoWithSignalsComponent {
     const term = this.searchTerm().toLowerCase();
     const allUsers = this.users();
     
-    // Track computation outside signal context
     this.computeCounter++;
     const currentCount = this.computeCounter;
     
-    console.log(`✅ With Signals - Compute #${currentCount}: Filtering ${allUsers.length} users for "${term}"`);
-    
-    // Update count asynchronously after computed returns
     queueMicrotask(() => this.computeCount.set(currentCount));
     
     return allUsers.filter(user => 
@@ -218,7 +214,6 @@ export class DemoWithSignalsComponent {
 
   triggerUnrelatedChange(): void {
     this.unrelatedValue.update(n => n + 1);
-    console.log('✅ With Signals - Unrelated change triggered, but filteredUsers() NOT recomputed!');
   }
 
   trackByUserId(_index: number, user: User): number {

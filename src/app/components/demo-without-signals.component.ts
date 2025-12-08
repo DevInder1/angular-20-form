@@ -193,19 +193,16 @@ export class DemoWithoutSignalsComponent {
 
   onSearchChange(event: Event): void {
     this.searchTerm = (event.target as HTMLInputElement).value;
-    console.log('🟡 Without Signals - Search changed:', this.searchTerm);
   }
 
   triggerUnrelatedChange(): void {
     this.unrelatedValue++;
-    console.log('🟡 Without Signals - Unrelated change triggered');
   }
 
   // ❌ This runs EVERY time the template is checked
   // Even when called multiple times in template!
   getFilteredUsers(): User[] {
-    this.filterCount++; // Track how many times this runs
-    console.log(`🟡 Without Signals - Filter #${this.filterCount}: Filtering ${this.users.length} users for "${this.searchTerm}"`);
+    this.filterCount++;
     
     const term = this.searchTerm.toLowerCase();
     return this.users.filter(user => 

@@ -220,20 +220,15 @@ export class DemoWithDebounceComponent {
     let timeoutId: number | undefined;
     
     effect(() => {
-      const input = this.searchInput(); // Track raw input
+      const input = this.searchInput();
       this.inputChangeCount.update(n => n + 1);
       
-      console.log(`🚀 Input changed to: "${input}"`);
-      
-      // Clear previous timeout
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
       
-      // Set new timeout
       timeoutId = setTimeout(() => {
         this.searchTerm.set(input);
-        console.log(`🚀 Debounced search term set to: "${input}"`);
       }, 300) as unknown as number;
     });
   }
@@ -244,13 +239,9 @@ export class DemoWithDebounceComponent {
     const term = this.searchTerm().toLowerCase();
     const allUsers = this.users();
     
-    // Track computation outside signal context
     this.computeCounter++;
     const currentCount = this.computeCounter;
     
-    console.log(`🚀 Compute #${currentCount}: Filtering ${allUsers.length} users for "${term}"`);
-    
-    // Update count asynchronously after computed returns
     queueMicrotask(() => this.computeCount.set(currentCount));
     
     return allUsers.filter(user => 
@@ -261,7 +252,6 @@ export class DemoWithDebounceComponent {
 
   triggerUnrelatedChange(): void {
     this.unrelatedValue.update(n => n + 1);
-    console.log('🚀 Unrelated change triggered, but filteredUsers() NOT recomputed!');
   }
 
   trackByUserId(_index: number, user: User): number {
