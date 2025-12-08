@@ -150,6 +150,12 @@ interface User {
       border-radius: 4px;
       background: white;
       display: block;
+      overflow-y: auto;
+      contain: strict;
+    }
+
+    cdk-virtual-scroll-viewport ::ng-deep .cdk-virtual-scroll-content-wrapper {
+      width: 100%;
     }
 
     .user-card {
